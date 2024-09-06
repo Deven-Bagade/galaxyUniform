@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Galaxy Uniform</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: rgba(4, 4, 53, 0.8);
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        #search-field{
+            padding:10px;
+            background-color: aqua;
+            color:rgba(4, 4, 53, 0.8);
+            border:rgba(4, 4, 53, 0.8);
+            border-style:solid;
+            border-radius: 5px;
+            font-size: 16px;
+           
+        }
+
+        .head {
+            background-color: rgba(4, 4, 53, 0.8);
+            padding: 20px;
+            color: aqua;
+            text-align: center;
+            border-bottom: 2px solid aqua;
+        }
+
+        .main {
+            background-color: rgba(255, 255, 255, 0.9);
+            width: 70%;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        select, input[type="number"], button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: rgb(4, 4, 53);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgb(4, 4, 53);
+            color: white;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #total-cost {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #last {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(4, 4, 53, 0.8);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #last:hover {
+            background-color: #333;
+        }
+
+        /* Style for the popup message */
+        #popupMessage {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: rgba(4, 4, 53, 0.8);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            font-size: 16px;
+        }
+        .alignment-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .alignment-container > div,
+        .alignment-container > button {
+            margin-right: 20px; /* Space between items */
+        }
+    </style>
+</head>
+<body>
+<div class="head">
+    <h1>Galaxy Uniform</h1>
+</div>
+
+<div class="main">
+    <button onclick="displaymain()">Submit Form</button>
+    <button onclick="tablediv()">View Form</button>
+    <input type="search" id="search-field" placeholder="Sr. No or MM/DD/YY">
+    <button type="button" onclick="searchfhn(); displaysearch();">Search</button>
+</div>
+
+<div class="main" id="main" style="display: none;">
+    <form onsubmit="event.preventDefault(); genderspecify();">
+        <label for="genderid">Enter Gender</label>
+        <select id="genderid" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <label for="enterstd">Enter STD</label>
+        <input id="enterstd" type="number" required min="1" max="10">
+        <label for="enterqty">Enter QTY</label>
+        <input id="enterqty" required type="number" min="1">
+        <button type="submit">Next</button>
+    </form>
+    <form id="formid"></form>
+    <button id="last" type="button" onclick="adddata()">Submit</button>
+</div>
+
+<div class="main" id="main2" style="display: none;">
+    <div class="alignment-container">
+        <div id="total-cost"></div>
+        <div id="today-cost"></div>
+        <button id="print" type="button" onclick="printScreen()">Print</button>
+    </div>
+    <table id="mytable">
+        <thead>
+        <tr>
+            <th>Sr. No</th>
+            <th>Gender</th>
+            <th>STD</th>
+            <th>Dress</th>
+            <th>Size</th>
+            <th>Qty</th>
+            <th>Cost</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="tablebody"></tbody>
+    </table>
+   
+</div>
+
+<div class="main" id="main3" style="display: none;">
+    <p id="para"></p>
+</div>
+
+<div id="popupMessage">Data added successfully!</div>
+
+<script>
+    var count = 1;
+    var start = 0;
+    var getgender;
+    var getstd;
+    var qty;
+    var size;
+    var prize;
+    
+    var fork = {
+        16: 680,
+        18: 710,
+        20: 740,
+        22: 770,
+        24: 800,
+    };
+    
+    var pinna = {
+        28: 820,
+        30: 840,
+        32: 860,
+        34: 890,
+        36: 920,
+        38: 950,
+        40: 970,
+        42: 990
+    };
+    
+    var boys = {
+        1: 650,
+        2: 670,
+        3: 690,
+        4: 710,
+        5: 730,
+        6: 750,
+        7: 770,
+        8: 970,
+        9: 970,
+        10: 970
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        function displayCurrentDate() {
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleString();
+            document.getElementById("current-date").textContent = "Current Date and Time: " + formattedDate;
+        }
+        setInterval(displayCurrentDate, 1000);
+        displayCurrentDate();
+    });
+
+    function printScreen() {
+        window.print();
+    }
+
+    var savedData = [];
+
+    window.onload = function () {
+        savedData = JSON.parse(localStorage.getItem('savedData')) || [];
+        if (savedData.length > 0) {
+            savedData.forEach(function (item) {
+                addrow(item.gender, item.std, item.dresstype, item.size, item.qty, item.prize);
+            });
+            updateRowCount();
+            calculateTotalCost();
+            todayearnedftn();
+        }
+    };
+
+    var main = document.getElementById('main');
+    var main2 = document.getElementById('main2');
+    var main3 = document.getElementById('main3');
+
+    function showDiv(divToShow) {
+        var divs = [main, main2, main3];
+        divs.forEach(function(div) {
+            div.style.display = 'none';
+        });
+        divToShow.style.display = 'block';
+    }
+
+    function displaymain() {
+        if (main.style.display !== 'block') {
+            showDiv(main);
+        }
+    }
+
+    function tablediv() {
+        if (main2.style.display !== 'block') {
+            showDiv(main2);
+        }
+    }
+
+    function displaysearch() {
+        if (main3.style.display !== 'block') {
+            showDiv(main3);
+        }
+    }
+
+    function genderspecify() {
+        getgender = document.getElementById("genderid").value;
+        getstd = document.getElementById("enterstd").value;
+        qty = document.getElementById("enterqty").value;
+        formextend = document.getElementById("formid");
+    
+        // Clear previous options if any
+        var existingElement = document.getElementById("myoption");
+        if (existingElement) {
+            formextend.removeChild(existingElement.previousSibling); // Remove label
+            formextend.removeChild(existingElement); // Remove select element
+        }
+    
+        var element = document.createElement("select");
+        element.id = 'myoption';
+    
+        var label = document.createElement("label");
+        label.setAttribute("for", "myoption");
+    
+        if (start === 0 && getgender === 'Female') {
+            var options = '';
+    
+            if (getstd <= 4) {
+                label.innerText = "Enter frok Size";
+                options += '<option value="16">16</option>';
+                options += '<option value="18">18</option>';
+                options += '<option value="20">20</option>';
+                options += '<option value="22">22</option>';
+                options += '<option value="24">24</option>';
+            } else {
+                label.innerText = "Enter pinna Size";
+                options += '<option value="28">28</option>';
+                options += '<option value="30">30</option>';
+                options += '<option value="32">32</option>';
+                options += '<option value="34">34</option>';
+                options += '<option value="36">36</option>';
+                options += '<option value="38">38</option>';
+                options += '<option value="40">40</option>';
+                options += '<option value="42">42</option>';
+            }
+            element.innerHTML = options;
+            formextend.appendChild(label);
+            formextend.appendChild(element);
+    
+            element.addEventListener('change', function () {
+                size = element.value;
+            });
+        }
+    }
+    
+    
+    function adddata() {
+        
+        var gender = document.getElementById("genderid").value;
+        var stand = document.getElementById("enterstd").value;
+        var tempprice = 0;
+        var dresstype = "";
+        var qty = parseInt(document.getElementById("enterqty").value);
+        var size = document.getElementById("myoption") ? document.getElementById("myoption").value : "-";
+    
+        const currentDate = new Date();
+        const storedDate = currentDate.toLocaleDateString('en-US'); // Store only the date part in MM/DD/YYYY format
+        
+        if (gender === 'Female' && (stand <= 4)) {
+            for (let key in fork) {
+                if (parseInt(key) === parseInt(size)) {
+                    tempprice = fork[key];
+                    dresstype = "fork";
+                    break;
+                }
+            }
+        } else if (gender === 'Female' && (stand > 4)) {
+            for (let key in pinna) {
+                if (parseInt(key) === parseInt(size)) {
+                    tempprice = pinna[key];
+                    dresstype = "pinna";
+                    break;
+                }
+            }
+        } else {
+            for (let key in boys) {
+                if (parseInt(key) === parseInt(stand)) {
+                    tempprice = boys[key];
+                    dresstype = "Pantshirt";
+                    break;
+                }
+            }
+        }
+
+        var prize = qty * tempprice;
+    
+        addrow(gender, stand, dresstype, size, qty, prize);
+    
+        var rowData = {
+            gender: gender,
+            std: stand,
+            dresstype: dresstype,
+            size: size,
+            qty: qty,
+            prize: prize,
+            date: storedDate
+        };
+    
+        saveData(rowData);
+        calculateTotalCost();
+        todayearnedftn();
+        showPopupMessage('Data added successfully')
+    }
+    
+    function addrow(gender, stand, dresstype, size, qty, prize) {
+        var tb = document.getElementById("tablebody");
+        var row = document.createElement("tr");
+        row.innerHTML = '<td>' + count + '</td>' + '<td>' + gender + '</td>' + '<td>' + stand + '</td>' + '<td>' + dresstype + '</td>' + '<td>' + size + '</td>' + '<td>' + qty + '</td>' + '<td>' + prize + '</td>' +
+            '<td><button onclick="deleteRow(this)">Delete</button></td>';
+        tb.appendChild(row);
+        count++;
+    }
+
+    function deleteRow(btn) {
+        var row = btn.parentNode.parentNode;
+        var rowIndex = row.rowIndex;
+        var table = document.getElementById("mytable");
+        table.deleteRow(rowIndex);
+
+        savedData.splice(rowIndex - 1, 1);
+        localStorage.setItem('savedData', JSON.stringify(savedData));
+
+        count--;
+        updateRowCount();
+        calculateTotalCost();
+        todayearnedftn();   
+    }
+
+    function updateRowCount() {
+        var rows = document.getElementById("mytable").getElementsByTagName("tr");
+        for (var i = 1; i < rows.length; i++) {
+            rows[i].getElementsByTagName("td")[0].innerText = i;
+        }
+    }
+
+    function saveData(data) {
+        savedData.push(data);
+        localStorage.setItem('savedData', JSON.stringify(savedData));
+    }
+
+    function calculateTotalCost() {
+        var total = 0;
+        var rows = document.getElementById("mytable").getElementsByTagName("tr");
+        for (var i = 1; i < rows.length; i++) {
+            var priceCell = rows[i].getElementsByTagName("td")[6];
+            total += parseFloat(priceCell.innerText);
+        }
+        document.getElementById("total-cost").innerText = "Total Cost: " + total.toFixed(2);
+    }
+
+    function todayearnedftn() {
+        var totaltoday = 0;
+        var rows = document.getElementById("mytable").getElementsByTagName("tr");
+        var currentDate = new Date().toLocaleDateString('en-US'); // Get current date in format MM/DD/YYYY
+
+        for (var i = 1; i < rows.length; i++) {
+            var rowData = JSON.parse(localStorage.getItem('savedData'))[i - 1];
+            var rowDate = rowData.date; // Get stored date in format MM/DD/YYYY
+
+            if (currentDate === rowDate) {
+                var priceCelltoday = rows[i].getElementsByTagName("td")[6];
+                totaltoday += parseFloat(priceCelltoday.innerText);
+            }
+        }
+        document.getElementById("today-cost").innerText = "Total Cost Today: " + totaltoday.toFixed(2);
+    }
+
+    function searchfhn() {
+        var searchdata = document.getElementById("search-field").value;
+        var rows = document.getElementById("mytable").getElementsByTagName("tr");
+        var found = false;
+        var resultsHTML = "";
+        var totalPrize = 0;
+    
+        document.getElementById("para").innerHTML = "";
+    
+        var resultsTableHTML = '<table id="search-results-table"><thead><tr>';
+    
+        var headerCells = rows[0].getElementsByTagName("th");
+        for (var k = 0; k < headerCells.length - 1; k++) { // Exclude the last column ("Action")
+            resultsTableHTML += '<th>' + headerCells[k].innerText + '</th>';
+        }
+        resultsTableHTML += '</tr></thead><tbody>';
+    
+        for (var i = 1; i < rows.length; i++) {
+            var serialNumberCell = rows[i].getElementsByTagName("td")[0];
+            var rowData = JSON.parse(localStorage.getItem('savedData'))[i - 1];
+            var rowDate = rowData.date; // Date stored in MM/DD/YYYY format
+    
+            if (serialNumberCell.innerText === searchdata || rowDate === searchdata) {
+                var rowCells = rows[i].getElementsByTagName("td");
+                resultsTableHTML += '<tr>';
+                for (var j = 0; j < rowCells.length - 1; j++) { // Exclude the last column ("Action")
+                    resultsTableHTML += '<td>' + rowCells[j].innerText + '</td>';
+                }
+                resultsTableHTML += '</tr>';
+                totalPrize += parseFloat(rowCells[6].innerText); // Accumulate the total prize
+                found = true;
+            }
+        }
+    
+        resultsTableHTML += '</tbody></table>';
+    
+        if (found) {
+            document.getElementById("para").innerHTML =  '<p><strong>Total Prize: ' + totalPrize.toFixed(2) + '</strong></p>' + resultsTableHTML;
+        } else {
+            document.getElementById("para").innerHTML = 'Not found.';
+        }
+    
+        var style = document.createElement('style');
+        style.innerHTML = `
+            #search-results-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+    
+            #search-results-table th, #search-results-table td {
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: left;
+            }
+    
+            #search-results-table th {
+                background-color: rgb(4, 4, 53);
+                color: white;
+            }
+    
+            #search-results-table tbody tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+
+    function showPopupMessage(message) {
+        var popup = document.getElementById("popupMessage");
+        popup.textContent = message;
+        popup.style.display = "block";
+        setTimeout(function() {
+            popup.style.display = "none";
+        }, 1000); // Hide the popup after 1 second
+    }
+</script>
+</body>
+</html>
